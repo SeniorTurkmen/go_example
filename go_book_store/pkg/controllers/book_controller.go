@@ -6,6 +6,7 @@ import (
 	"example/go_bookstore/pkg/utils"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -96,10 +97,18 @@ func DeleteBook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	book, err := models.DeleteBook(id)
+	book, err := models.GetBookById(id)
+	if err != nil {
+		utils.ResponsWithError(w, http.StatusBadRequest, "Invalid Book ID")
+		return
+	}
+
+	_, err = models.DeleteBook(id)
 	if err != nil {
 		utils.ResponsWithError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
+	currentTime := time.Now()
+	book.DeletedAt = &currentTime
 	utils.ResponsWithJson(w, http.StatusOK, book)
 }
